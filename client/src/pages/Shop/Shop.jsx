@@ -1,12 +1,27 @@
 import React, { useState, useRef } from 'react';
 import styled from '@emotion/styled';
-import { 
-  FaSearch, FaShoppingCart, FaHeart, FaPlusCircle, 
-  FaHeadset, FaTimes, FaStar, FaStarHalfAlt, FaRegStar,
-  FaChevronDown, FaFilter
-} from 'react-icons/fa';
+import { FaSearch, FaPlusCircle, FaHeadset, FaTimes, FaShoppingCart, FaHeart, FaChevronDown, FaStar, FaStarHalfAlt, FaRegStar } from 'react-icons/fa';
+import ContributeProduct from '../../components/shop/ContributeProduct';
+import ShopFilters from '../../components/shop/ShopFilters';
 
-// ===== STYLED COMPONENTS ===== //
+const [filters, setFilters] = useState({
+  category: 'all',
+  priceRange: [0, 10000],
+  inStock: true,
+  productType: 'all',
+  emiEligible: false
+});
+
+const filteredProducts = products.filter(product => {
+  const matchesCategory = filters.category === 'all' || product.category === filters.category;
+  const matchesType = filters.productType === 'all' || product.type === filters.productType;
+  const matchesPrice = product.price >= filters.priceRange[0] && product.price <= filters.priceRange[1];
+  const matchesStock = !filters.inStock || product.inStock;
+  const matchesEMI = !filters.emiEligible || product.emi;
+
+  return matchesCategory && matchesType && matchesPrice && matchesStock && matchesEMI;
+});
+
 const ShopContainer = styled.div`
   max-width: 1200px;
   margin: 0 auto;
@@ -35,7 +50,6 @@ const SearchInput = styled.input`
   border-radius: 8px;
   font-size: 1rem;
   transition: all 0.3s ease;
-  
   &:focus {
     outline: none;
     border-color: #6c63ff;
@@ -52,24 +66,67 @@ const ActionButton = styled.button`
   cursor: pointer;
   transition: all 0.3s ease;
   border: 1px solid #6c63ff;
-  
   &.primary {
     background: #6c63ff;
     color: white;
-    
     &:hover {
       background: #5a52d6;
     }
   }
-  
   &.secondary {
     background: white;
     color: #6c63ff;
-    
     &:hover {
       background: #f3f1ff;
     }
   }
+`;
+
+const ProductGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
+`;
+
+const ProductCard = styled.div`
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  padding: 1rem;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+`;
+
+const ProductImage = styled.img`
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 4px;
+`;
+
+const ProductActions = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+`;
+
+const ReviewsSection = styled.section`
+  margin-top: 4rem;
+  padding: 2rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+`;
+
+const ReviewCard = styled.div`
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-bottom: 1rem;
 `;
 
 const ModalOverlay = styled.div`
@@ -122,258 +179,117 @@ const FormTextarea = styled.textarea`
   resize: vertical;
 `;
 
-const ProductGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 2rem;
-  margin-bottom: 3rem;
-`;
-
-const ReviewsSection = styled.section`
-  margin-top: 4rem;
-  padding: 2rem;
-  background: #f8f9fa;
-  border-radius: 8px;
-`;
-
-const ReviewCard = styled.div`
-  background: white;
-  padding: 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  margin-bottom: 1rem;
-`;
-
-// ===== MAIN COMPONENT ===== //
 const Shop = () => {
-  // State management
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('cosmetics');
-  const [productForm, setProductForm] = useState({
-    name: '',
-    tagline: '',
-    price: '',
-    description: ''
-  });
-  const [reviews, setReviews] = useState([
+  const [productForm, setProductForm] = useState({ name: '', tagline: '', price: '', description: '' });
+  const [cart, setCart] = useState([]);
+  const [wishlist, setWishlist] = useState([]);
+  const supportRef = useRef(null);
+  const [activeFaq, setActiveFaq] = useState(null);
+  const [newReview, setNewReview] = useState('');
+
+const handlePublishProduct = (productData) => {
+  console.log('Product Published:', productData);
+  // Add your logic to update products list or API call here!
+  setShowAddProduct(false);  // Hide the modal after publish
+};
+
+  const products = [
+    { id: 1, name: 'Testosterone Gel', price: 499, img: 'https://via.placeholder.com/300' },
+    { id: 2, name: 'Estradiol Patches', price: 399, img: 'https://via.placeholder.com/300' },
+    { id: 3, name: 'Binder', price: 999, img: 'https://via.placeholder.com/300' },
+    { id: 4, name: 'Lipstick', price: 199, img: 'https://via.placeholder.com/300' }
+  ];
+
+  const toggleCart = (id) => {
+    setCart(cart.includes(id) ? cart.filter(item => item !== id) : [...cart, id]);
+  };
+
+  const toggleWishlist = (id) => {
+    setWishlist(wishlist.includes(id) ? wishlist.filter(item => item !== id) : [...wishlist, id]);
+  };
+
+  const reviews = [
     { id: 1, name: "Priya K.", rating: 4.5, comment: "Love the foundation! Perfect shade match.", date: "2023-05-15" },
     { id: 2, name: "Aryan S.", rating: 5, comment: "Excellent quality binders! Very comfortable.", date: "2023-06-22" },
     { id: 3, name: "Maya T.", rating: 3, comment: "Good but some shades didn't match my skin tone.", date: "2023-07-10" },
     { id: 4, name: "Rohan P.", rating: 4, comment: "Fast delivery and good packaging.", date: "2023-07-15" },
     { id: 5, name: "Neha G.", rating: 5, comment: "Will definitely buy again! Amazing products.", date: "2023-07-20" }
-  ]);
-  const [newReview, setNewReview] = useState('');
-  const [activeFaq, setActiveFaq] = useState(null);
-  const supportRef = useRef(null);
-
-  const faqs = [
-    { 
-      question: "How do I track my order?", 
-      answer: "You'll receive a tracking link via email once your order is shipped. You can also check order status in your account dashboard." 
-    },
-    { 
-      question: "What payment methods do you accept?", 
-      answer: "We accept all major credit/debit cards, UPI payments, net banking, and select digital wallets." 
-    },
-    { 
-      question: "What is your return policy?", 
-      answer: "We offer 15-day returns for unopened products. Cosmetic items must be sealed for hygiene reasons." 
-    },
-    { 
-      question: "How can I contact customer support?", 
-      answer: "Our support team is available 24/7 via chat, email (support@transcare.com), or phone (+91 9876543210)." 
-    },
-    { 
-      question: "Do you offer international shipping?", 
-      answer: "Currently we only ship within India, but we're working to expand internationally soon!" 
-    }
   ];
 
-  const handleAddProduct = (e) => {
-    e.preventDefault();
-    // Here you would typically send the data to your backend
-    console.log('Adding product:', { ...productForm, category: selectedCategory });
-    setShowAddProduct(false);
-    setProductForm({
-      name: '',
-      tagline: '',
-      price: '',
-      description: ''
-    });
-  };
+  const faqs = [
+    { question: "How do I track my order?", answer: "You'll receive a tracking link via email once your order is shipped." },
+    { question: "What payment methods do you accept?", answer: "We accept all major cards, UPI, net banking, and wallets." },
+    { question: "What is your return policy?", answer: "We offer 15-day returns for unopened products." },
+    { question: "How can I contact support?", answer: "Our support is available 24/7 via chat, email, or phone." },
+    { question: "Do you offer international shipping?", answer: "Currently we only ship within India." }
+  ];
 
   const handleReviewSubmit = (e) => {
     e.preventDefault();
-    if (newReview.trim()) {
-      const newReviewObj = {
-        id: reviews.length + 1,
-        name: "You", // Would normally come from user auth
-        rating: 5, // Would normally come from rating input
-        comment: newReview,
-        date: new Date().toISOString().split('T')[0]
-      };
-      setReviews([newReviewObj, ...reviews]);
-      setNewReview('');
-    }
+    setNewReview('');
   };
 
   const scrollToSupport = () => {
-    setTimeout(() => {
-      supportRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, 100);
+    supportRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  
+
   return (
+    
     <ShopContainer>
-      {/* ===== TOP BAR ===== */}
       <TopBar>
         <SearchBar>
-          <FaSearch style={{ 
-            position: 'absolute', 
-            left: '1rem', 
-            top: '50%', 
-            transform: 'translateY(-50%)',
-            color: '#6c63ff'
-          }} />
-          <SearchInput 
-            placeholder="Search medicines, cosmetics, products..." 
-          />
+          <FaSearch style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: '#6c63ff' }} />
+          <SearchInput placeholder="Search medicines, cosmetics, products..." />
         </SearchBar>
+ 
+<ContributeProduct 
+  show={showAddProduct} 
+  onClose={() => setShowAddProduct(false)} 
+  onPublish={handlePublishProduct} 
+/>
+
+
 
         <div style={{ display: 'flex', gap: '1rem' }}>
-          <ActionButton 
-            className="secondary" 
-            onClick={() => setShowAddProduct(true)}
-          >
+          <ActionButton className="secondary" onClick={() => setShowAddProduct(true)}>
             <FaPlusCircle /> Add Product
           </ActionButton>
-          <ActionButton 
-            className="secondary" 
-            onClick={scrollToSupport}
-          >
+          <ActionButton className="secondary" onClick={scrollToSupport}>
             <FaHeadset /> Customer Care
           </ActionButton>
         </div>
       </TopBar>
 
-      {/* ===== PRODUCT FILTERS ===== */}
-      {/* Your ShopFilters component would go here */}
-      
-      {/* ===== PRODUCT GRID ===== */}
       <ProductGrid>
-        {/* Your ProductCard components would go here */}
+        {products.map(product => (
+          <ProductCard key={product.id}>
+            <ProductImage src={product.img} alt={product.name} />
+            <h3>{product.name}</h3>
+            <p>₹{product.price}</p>
+            <ProductActions>
+              <button onClick={() => toggleCart(product.id)}>{cart.includes(product.id) ? '🛒 Added' : '🛒 Add to Cart'}</button>
+              <button onClick={() => toggleWishlist(product.id)}>{wishlist.includes(product.id) ? '❤️ Wishlisted' : '🤍 Wishlist'}</button>
+            </ProductActions>
+          </ProductCard>
+        ))}
       </ProductGrid>
 
-      {/* ===== ADD PRODUCT MODAL ===== */}
-      {showAddProduct && (
-        <ModalOverlay onClick={() => setShowAddProduct(false)}>
-          <ModalContent onClick={e => e.stopPropagation()}>
-            <CloseButton onClick={() => setShowAddProduct(false)}>
-              <FaTimes />
-            </CloseButton>
-            <h2>Add New Product</h2>
-            <form onSubmit={handleAddProduct}>
-              <FormGroup>
-                <FormLabel>Category</FormLabel>
-                <select 
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  style={{ 
-                    width: '100%', 
-                    padding: '0.8rem', 
-                    border: '1px solid #ddd',
-                    borderRadius: '4px'
-                  }}
-                >
-                  <option value="cosmetics">Cosmetics</option>
-                  <option value="skincare">Skin Care</option>
-                  <option value="handcrafts">Handcrafts</option>
-                </select>
-              </FormGroup>
-
-              <FormGroup>
-                <FormLabel>Product Name</FormLabel>
-                <FormInput 
-                  type="text" 
-                  value={productForm.name}
-                  onChange={(e) => setProductForm({...productForm, name: e.target.value})}
-                  placeholder="Enter product name"
-                  required
-                />
-              </FormGroup>
-
-              <FormGroup>
-                <FormLabel>Catchy Tagline</FormLabel>
-                <FormInput 
-                  type="text" 
-                  value={productForm.tagline}
-                  onChange={(e) => setProductForm({...productForm, tagline: e.target.value})}
-                  placeholder="Short catchy phrase (max 50 chars)"
-                  maxLength="50"
-                  required
-                />
-              </FormGroup>
-
-              <FormGroup>
-                <FormLabel>Price (₹)</FormLabel>
-                <FormInput 
-                  type="number" 
-                  value={productForm.price}
-                  onChange={(e) => setProductForm({...productForm, price: e.target.value})}
-                  placeholder="Enter price"
-                  min="0"
-                  step="0.01"
-                  required
-                />
-              </FormGroup>
-
-              <FormGroup>
-                <FormLabel>Description</FormLabel>
-                <FormTextarea 
-                  value={productForm.description}
-                  onChange={(e) => setProductForm({...productForm, description: e.target.value})}
-                  placeholder="Detailed product description"
-                  required
-                />
-              </FormGroup>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
-                <ActionButton 
-                  type="button"
-                  className="secondary" 
-                  onClick={() => setShowAddProduct(false)}
-                >
-                  Cancel
-                </ActionButton>
-                <ActionButton 
-                  type="submit"
-                  className="primary"
-                >
-                  Add Product
-                </ActionButton>
-              </div>
-            </form>
-          </ModalContent>
-        </ModalOverlay>
-      )}
-
-      {/* ===== CUSTOMER CARE SECTION ===== */}
       <ReviewsSection ref={supportRef}>
         <h2>Customer Care</h2>
-        
-        {/* Recent Reviews */}
         <div style={{ marginTop: '2rem' }}>
           <h3>Recent Customer Reviews</h3>
-          {reviews.slice(0, 5).map(review => (
+          {reviews.map(review => (
             <ReviewCard key={review.id}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <strong>{review.name}</strong>
                 <div style={{ color: '#ffc107', display: 'flex' }}>
                   {[1, 2, 3, 4, 5].map(star => (
                     star <= review.rating ? 
-                      (star - 0.5 <= review.rating ? 
-                        <FaStar key={star} /> : 
-                        <FaStarHalfAlt key={star} />) : 
+                      (star - 0.5 <= review.rating ? <FaStar key={star} /> : <FaStarHalfAlt key={star} />) : 
                       <FaRegStar key={star} />
                   ))}
                 </div>
@@ -383,58 +299,23 @@ const Shop = () => {
             </ReviewCard>
           ))}
         </div>
-
-        {/* Leave Review */}
         <div style={{ marginTop: '2rem' }}>
           <h3>Share Your Experience</h3>
           <form onSubmit={handleReviewSubmit}>
-            <FormTextarea
-              value={newReview}
-              onChange={(e) => setNewReview(e.target.value)}
-              placeholder="Tell us about your experience with our products..."
-              style={{ marginBottom: '1rem' }}
-            />
-            <ActionButton 
-              type="submit"
-              className="primary"
-            >
-              Submit Review
-            </ActionButton>
+            <FormTextarea value={newReview} onChange={(e) => setNewReview(e.target.value)} placeholder="Tell us about your experience..." style={{ marginBottom: '1rem' }} />
+            <ActionButton type="submit" className="primary">Submit Review</ActionButton>
           </form>
         </div>
-
-        {/* FAQs */}
         <div style={{ marginTop: '3rem' }}>
           <h3>Frequently Asked Questions</h3>
           {faqs.map((faq, index) => (
             <div key={index} style={{ marginBottom: '1rem' }}>
-              <div 
-                style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'center',
-                  cursor: 'pointer',
-                  padding: '1rem',
-                  background: '#eee',
-                  borderRadius: '4px'
-                }}
-                onClick={() => setActiveFaq(activeFaq === index ? null : index)}
-              >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', padding: '1rem', background: '#eee', borderRadius: '4px' }} onClick={() => setActiveFaq(activeFaq === index ? null : index)}>
                 <strong>{faq.question}</strong>
-                <FaChevronDown style={{ 
-                  transform: activeFaq === index ? 'rotate(180deg)' : 'rotate(0deg)',
-                  transition: 'transform 0.3s ease'
-                }} />
+                <FaChevronDown style={{ transform: activeFaq === index ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s ease' }} />
               </div>
               {activeFaq === index && (
-                <div style={{ 
-                  padding: '1rem',
-                  background: '#f9f9f9',
-                  borderBottomLeftRadius: '4px',
-                  borderBottomRightRadius: '4px'
-                }}>
-                  {faq.answer}
-                </div>
+                <div style={{ padding: '1rem', background: '#f9f9f9', borderBottomLeftRadius: '4px', borderBottomRightRadius: '4px' }}>{faq.answer}</div>
               )}
             </div>
           ))}

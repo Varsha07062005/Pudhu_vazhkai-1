@@ -7,10 +7,18 @@ const ShopContainer = styled.div`
   max-width: 1400px;
   margin: 0 auto;
   padding: 2rem;
+  background: linear-gradient(135deg, #f9f9ff, #f0f0f8);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  font-family: 'Poppins', sans-serif;
 `;
 
 const SearchContainer = styled.div`
   margin-bottom: 2rem;
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 `;
 
 const SearchBar = styled.input`
@@ -21,11 +29,12 @@ const SearchBar = styled.input`
   font-size: 1rem;
   margin-bottom: 1.5rem;
   transition: all 0.3s ease;
+  background: #fff;
 
   &:focus {
-    border-color: #6a5acd;
+    border-color: #6c63ff;
     outline: none;
-    box-shadow: 0 0 0 2px rgba(106, 90, 205, 0.2);
+    box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.2);
   }
 `;
 
@@ -34,12 +43,38 @@ const ShopHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
+  background: #fff;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+
+  h1 {
+    font-size: 2rem;
+    color: #333;
+  }
+
+  span {
+    font-weight: bold;
+    color: #6c63ff;
+  }
 `;
 
 const ProductGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 2rem;
+  animation: fadeIn 0.5s ease;
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 `;
 
 const Shop = () => {
@@ -80,7 +115,6 @@ const Shop = () => {
       inStock: true,
       emi: true
     },
-    // Add more products...
   ];
 
   const filteredProducts = products.filter(product => {
