@@ -4,23 +4,6 @@ import { FaSearch, FaPlusCircle, FaHeadset, FaTimes, FaShoppingCart, FaHeart, Fa
 import ContributeProduct from '../../components/shop/ContributeProduct';
 import ShopFilters from '../../components/shop/ShopFilters';
 
-const [filters, setFilters] = useState({
-  category: 'all',
-  priceRange: [0, 10000],
-  inStock: true,
-  productType: 'all',
-  emiEligible: false
-});
-
-const filteredProducts = products.filter(product => {
-  const matchesCategory = filters.category === 'all' || product.category === filters.category;
-  const matchesType = filters.productType === 'all' || product.type === filters.productType;
-  const matchesPrice = product.price >= filters.priceRange[0] && product.price <= filters.priceRange[1];
-  const matchesStock = !filters.inStock || product.inStock;
-  const matchesEMI = !filters.emiEligible || product.emi;
-
-  return matchesCategory && matchesType && matchesPrice && matchesStock && matchesEMI;
-});
 
 const ShopContainer = styled.div`
   max-width: 1200px;

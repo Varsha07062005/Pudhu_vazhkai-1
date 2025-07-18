@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import styled from '@emotion/styled';
 import { FaCalendarAlt, FaClock, FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 
-const CalendarContainer = styled.div`
+const Container = styled.div`
   background: ${props => props.theme.colors.accent};
-  border-radius: 8px;
-  padding: ${props => props.theme.spacing.md};
-  box-shadow: ${props => props.theme.shadows.small};
+  border-radius: 12px;
+  padding: ${props => props.theme.spacing.lg};
+  box-shadow: ${props => props.theme.shadows.medium};
 `;
 
-const CalendarHeader = styled.div`
+const Header = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -20,49 +20,50 @@ const MonthYear = styled.h3`
   margin: 0;
 `;
 
-const CalendarGrid = styled.div`
+const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: ${props => props.theme.spacing.sm};
 `;
 
-const DayHeader = styled.div`
+const Day = styled.div`
   text-align: center;
   font-weight: bold;
   padding: ${props => props.theme.spacing.sm} 0;
 `;
 
-const DayCell = styled.div`
+const DateCell = styled.div`
   padding: ${props => props.theme.spacing.sm};
   text-align: center;
-  cursor: pointer;
-  border-radius: 4px;
-  background: ${props => {
-    if (props.selected) return props.theme.colors.primary;
-    if (props.disabled) return props.theme.colors.lightBlue;
-    return 'transparent';
-  }};
-  color: ${props => {
-    if (props.selected) return props.theme.colors.accent;
-    if (props.disabled) return props.theme.colors.text;
-    return props.theme.colors.text;
-  }};
-  opacity: ${props => props.disabled ? 0.5 : 1};
+  cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
+  border-radius: 6px;
+  background: ${props => props.selected ? props.theme.colors.primary : 'transparent'};
+  color: ${props => props.selected ? props.theme.colors.accent : props.theme.colors.text};
+  opacity: ${props => props.disabled ? 0.4 : 1};
+  transition: 0.2s;
+
+  &:hover {
+    background: ${props => props.disabled ? 'transparent' : props.theme.colors.lightBlue};
+  }
 `;
 
-const TimeSlots = styled.div`
+const TimeSection = styled.div`
   margin-top: ${props => props.theme.spacing.xl};
 `;
 
-const TimeSlot = styled.button`
+const TimeButton = styled.button`
   background: ${props => props.selected ? props.theme.colors.primary : props.theme.colors.accent};
   color: ${props => props.selected ? props.theme.colors.accent : props.theme.colors.text};
   border: 1px solid ${props => props.theme.colors.lightBlue};
   padding: ${props => props.theme.spacing.sm} ${props => props.theme.spacing.md};
-  margin-right: ${props => props.theme.spacing.sm};
-  margin-bottom: ${props => props.theme.spacing.sm};
-  border-radius: 4px;
+  margin: ${props => props.theme.spacing.xs};
+  border-radius: 6px;
   cursor: pointer;
+  transition: 0.2s;
+
+  &:hover {
+    transform: scale(1.05);
+  }
 `;
 
 const NavButton = styled.button`
@@ -81,13 +82,11 @@ const AppointmentCalendar = ({ doctor, appointmentType, onSelectDate, onBack, on
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const timeSlots = ['9:00 AM', '11:00 AM', '1:00 PM', '3:00 PM', '5:00 PM'];
 
-  const getDaysInMonth = (year, month) => {
-    return new Date(year, month + 1, 0).getDate();
-  };
+  const today = new Date();
 
-  const getFirstDayOfMonth = (year, month) => {
-    return new Date(year, month, 1).getDay();
-  };
+  const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
+
+  const getFirstDayOfMonth = (year, month) => new Date(year, month, 1).getDay();
 
   const handlePrevMonth = () => {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
@@ -99,6 +98,7 @@ const AppointmentCalendar = ({ doctor, appointmentType, onSelectDate, onBack, on
 
   const handleDateSelect = (day) => {
     const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+    if (date < today) return;
     setSelectedDate(date);
     setSelectedTime(null);
   };
@@ -112,6 +112,7 @@ const AppointmentCalendar = ({ doctor, appointmentType, onSelectDate, onBack, on
     if (period === 'PM' && hour < 12) hour += 12;
     if (period === 'AM' && hour === 12) hour = 0;
     appointmentDateTime.setHours(hour);
+    appointmentDateTime.setMinutes(0);
     onSelectDate(appointmentDateTime);
   };
 
@@ -120,72 +121,70 @@ const AppointmentCalendar = ({ doctor, appointmentType, onSelectDate, onBack, on
     const month = currentMonth.getMonth();
     const daysInMonth = getDaysInMonth(year, month);
     const firstDay = getFirstDayOfMonth(year, month);
-    
-    const daysArray = [];
-    
-    // Empty cells for days before the first day of the month
+    const cells = [];
+
     for (let i = 0; i < firstDay; i++) {
-      daysArray.push(<DayCell key={`empty-${i}`} disabled></DayCell>);
+      cells.push(<DateCell key={`empty-${i}`} disabled />);
     }
-    
-    // Days of the month
+
     for (let day = 1; day <= daysInMonth; day++) {
-      const isSelected = selectedDate && selectedDate.getDate() === day && 
-                         selectedDate.getMonth() === month && 
-                         selectedDate.getFullYear() === year;
-      daysArray.push(
-        <DayCell 
-          key={`day-${day}`} 
+      const date = new Date(year, month, day);
+      const isSelected = selectedDate && selectedDate.getDate() === day &&
+        selectedDate.getMonth() === month && selectedDate.getFullYear() === year;
+      const isPast = date < today;
+
+      cells.push(
+        <DateCell
+          key={`day-${day}`}
           selected={isSelected}
+          disabled={isPast}
           onClick={() => handleDateSelect(day)}
         >
           {day}
-        </DayCell>
+        </DateCell>
       );
     }
-    
-    return daysArray;
+
+    return cells;
   };
 
   return (
     <div>
       <button onClick={onBack}>Back</button>
-      
-      <h2>Select Date and Time</h2>
-      <p>Appointment with {doctor?.name} for {appointmentType} consultation</p>
-      
-      <CalendarContainer>
-        <CalendarHeader>
+
+      <h2>Select Date & Time</h2>
+      <p>Booking with {doctor?.name} for {appointmentType} consultation</p>
+
+      <Container>
+        <Header>
           <NavButton onClick={handlePrevMonth}><FaArrowLeft /></NavButton>
           <MonthYear>
             {currentMonth.toLocaleString('default', { month: 'long' })} {currentMonth.getFullYear()}
           </MonthYear>
           <NavButton onClick={handleNextMonth}><FaArrowRight /></NavButton>
-        </CalendarHeader>
-        
-        <CalendarGrid>
-          {days.map(day => (
-            <DayHeader key={day}>{day}</DayHeader>
-          ))}
+        </Header>
+
+        <Grid>
+          {days.map(day => <Day key={day}>{day}</Day>)}
           {renderCalendar()}
-        </CalendarGrid>
-      </CalendarContainer>
-      
+        </Grid>
+      </Container>
+
       {selectedDate && (
-        <TimeSlots>
-          <h3><FaClock /> Available Times</h3>
+        <TimeSection>
+          <h3><FaClock /> Available Time Slots</h3>
           {timeSlots.map(time => (
-            <TimeSlot 
+            <TimeButton
               key={time}
-              selected={time === selectedTime}
+              selected={selectedTime === time}
               onClick={() => handleTimeSelect(time)}
             >
               {time}
-            </TimeSlot>
+            </TimeButton>
           ))}
-        </TimeSlots>
+        </TimeSection>
       )}
-      
+
       {selectedTime && (
         <button onClick={onNext}>Next</button>
       )}

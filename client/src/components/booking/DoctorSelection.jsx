@@ -1,10 +1,14 @@
-import React from 'react';
+// 📁 Path: client/src/components/booking/DoctorSelection.jsx
+
+import React, { useState } from 'react';
 import styled from '@emotion/styled';
 import { FaUserMd, FaArrowRight } from 'react-icons/fa';
+import { AnimatePresence } from 'framer-motion';
+import DoctorDetailsPanel from './DoctorDetailsPanel';
 
 const DoctorList = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: ${props => props.theme.spacing.lg};
 `;
 
@@ -30,14 +34,14 @@ const DoctorInfo = styled.div`
 `;
 
 const DoctorAvatar = styled.div`
-  width: 60px;
-  height: 60px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   background: ${props => props.theme.colors.lightBlue};
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   color: ${props => props.theme.colors.primary};
 `;
 
@@ -54,63 +58,72 @@ const DoctorSpecialty = styled.p`
   opacity: 0.7;
 `;
 
-const DoctorBio = styled.p`
-  margin-bottom: ${props => props.theme.spacing.md};
-`;
-
-const NextButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: ${props => props.theme.spacing.sm};
+const ViewButton = styled.button`
   background: ${props => props.theme.colors.primary};
   color: ${props => props.theme.colors.accent};
   border: none;
   padding: ${props => props.theme.spacing.sm} ${props => props.theme.spacing.md};
   border-radius: 4px;
-  margin-top: ${props => props.theme.spacing.xl};
   cursor: pointer;
-  float: right;
+  width: 100%;
+  transition: all 0.3s;
+
+  &:hover {
+    background: ${props => props.theme.colors.primaryHover};
+  }
 `;
 
+const NextButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: ${props => props.theme.spacing.sm};
+  background: ${props => props.disabled ? props.theme.colors.lightBlue : props.theme.colors.primary};
+  color: ${props => props.theme.colors.accent};
+  border: none;
+  padding: ${props => props.theme.spacing.sm} ${props => props.theme.spacing.md};
+  border-radius: 4px;
+  margin-top: ${props => props.theme.spacing.xl};
+  cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
+  float: right;
+  transition: all 0.3s;
+
+  &:hover {
+    background: ${props => !props.disabled && props.theme.colors.primaryHover};
+  }
+`;
+
+const doctors = Array.from({ length: 30 }, (_, i) => ({
+  id: i + 1,
+  name: `Dr. Sample Doctor ${i + 1}`,
+  specialty: i % 2 === 0 ? 'Endocrinology' : 'Gender Surgery',
+  bio: 'Experienced in transgender patient care with a focus on empathy and professionalism.',
+  avatar: `SD${i + 1}`,
+  hospitalLink: 'https://www.samplehospital.com',
+}));
+
 const DoctorSelection = ({ onSelectDoctor, onNext }) => {
-  const [selectedDoctor, setSelectedDoctor] = React.useState(null);
-  
-  const doctors = [
-    {
-      id: 1,
-      name: 'Dr. Sarah Johnson',
-      specialty: 'Endocrinology',
-      bio: 'Specializes in hormone therapy for transgender patients',
-      avatar: 'SJ'
-    },
-    {
-      id: 2,
-      name: 'Dr. Michael Chen',
-      specialty: 'Gender Surgery',
-      bio: 'Board-certified plastic surgeon with 10+ years experience',
-      avatar: 'MC'
-    },
-    {
-      id: 3,
-      name: 'Dr. Lisa Williams',
-      specialty: 'Therapy',
-      bio: 'LGBTQ+ focused mental health professional',
-      avatar: 'LW'
-    }
-  ];
+  const [selectedDoctor, setSelectedDoctor] = useState(null);
+  const [showDetails, setShowDetails] = useState(false);
 
   const handleSelect = (doctor) => {
     setSelectedDoctor(doctor);
     onSelectDoctor(doctor);
   };
 
+  const openDetails = (doctor) => {
+    setSelectedDoctor(doctor);
+    setShowDetails(true);
+  };
+
   return (
     <div>
       <h2>Select a Doctor</h2>
+
       <DoctorList>
         {doctors.map(doctor => (
-          <DoctorCard 
-            key={doctor.id} 
+          <DoctorCard
+            key={doctor.id}
             selected={selectedDoctor?.id === doctor.id}
             onClick={() => handleSelect(doctor)}
           >
@@ -121,16 +134,20 @@ const DoctorSelection = ({ onSelectDoctor, onNext }) => {
                 <DoctorSpecialty>{doctor.specialty}</DoctorSpecialty>
               </DoctorDetails>
             </DoctorInfo>
-            <DoctorBio>{doctor.bio}</DoctorBio>
+            <ViewButton onClick={(e) => { e.stopPropagation(); openDetails(doctor); }}>View Details</ViewButton>
           </DoctorCard>
         ))}
       </DoctorList>
-      
-      {selectedDoctor && (
-        <NextButton onClick={onNext}>
-          Next <FaArrowRight />
-        </NextButton>
-      )}
+
+      <NextButton onClick={onNext} disabled={!selectedDoctor}>
+        Next <FaArrowRight />
+      </NextButton>
+
+      <AnimatePresence>
+        {showDetails && (
+          <DoctorDetailsPanel doctor={selectedDoctor} onClose={() => setShowDetails(false)} />
+        )}
+      </AnimatePresence>
     </div>
   );
 };

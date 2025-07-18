@@ -1,39 +1,42 @@
-import React, { useState } from 'react';
+import React from 'react';
 import styled from '@emotion/styled';
-import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
+import { FaArrowLeft, FaArrowRight, FaHeartbeat, FaSyringe, FaUserNurse } from 'react-icons/fa';
 
-const ConsultationOptions = styled.div`
+const OptionsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: ${props => props.theme.spacing.lg};
   margin: ${props => props.theme.spacing.xl} 0;
 `;
 
 const OptionCard = styled.div`
-  background: ${props => props.theme.colors.accent};
-  border-radius: 8px;
+  background: ${props => props.selected ? props.theme.colors.primary : props.theme.colors.accent};
+  color: ${props => props.selected ? props.theme.colors.accent : props.theme.colors.text};
+  border-radius: 12px;
   padding: ${props => props.theme.spacing.md};
-  box-shadow: ${props => props.theme.shadows.small};
+  box-shadow: ${props => props.theme.shadows.medium};
   cursor: pointer;
-  transition: transform 0.3s;
   border: 2px solid ${props => props.selected ? props.theme.colors.primary : 'transparent'};
-  
+  transition: all 0.3s;
+
   &:hover {
-    transform: translateY(-3px);
+    transform: translateY(-5px);
+    border: 2px solid ${props => props.theme.colors.primary};
   }
 `;
 
-const OptionTitle = styled.h3`
+const Title = styled.h3`
   margin-bottom: ${props => props.theme.spacing.sm};
 `;
 
-const OptionDescription = styled.p`
+const Description = styled.p`
   margin-bottom: ${props => props.theme.spacing.sm};
+  opacity: 0.8;
 `;
 
-const OptionPrice = styled.p`
+const Price = styled.p`
   font-weight: bold;
-  color: ${props => props.theme.colors.primary};
+  color: ${props => props.selected ? props.theme.colors.accent : props.theme.colors.primary};
 `;
 
 const NavButtons = styled.div`
@@ -50,50 +53,57 @@ const NavButton = styled.button`
   color: ${props => props.theme.colors.accent};
   border: none;
   padding: ${props => props.theme.spacing.sm} ${props => props.theme.spacing.md};
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
 `;
 
+const IconWrapper = styled.span`
+  font-size: 1.2rem;
+`;
+
 const ConsultationType = ({ selectedType, onSelectType, onBack, onNext }) => {
-  const consultationTypes = [
+  const types = [
     {
       id: 'general',
       title: 'General Consultation',
-      description: 'Initial assessment and general advice about transition',
-      price: '$100'
+      description: 'Initial assessment & advice about transition',
+      price: '$100',
+      icon: <FaHeartbeat />
     },
     {
       id: 'hormonal',
       title: 'Hormone Therapy Consultation',
-      description: 'Discussion about HRT options and prescriptions',
-      price: '$150'
+      description: 'HRT options discussion & prescriptions',
+      price: '$150',
+      icon: <FaSyringe />
     },
     {
       id: 'surgical',
       title: 'Surgical Consultation',
       description: 'Evaluation for gender-affirming surgeries',
-      price: '$200'
+      price: '$200',
+      icon: <FaUserNurse />
     }
   ];
 
   return (
     <div>
-      <h2>Select Consultation Type</h2>
-      
-      <ConsultationOptions>
-        {consultationTypes.map(type => (
+      <h2>Choose Consultation Type</h2>
+      <OptionsGrid>
+        {types.map(type => (
           <OptionCard 
             key={type.id}
             selected={selectedType === type.id}
             onClick={() => onSelectType(type.id)}
           >
-            <OptionTitle>{type.title}</OptionTitle>
-            <OptionDescription>{type.description}</OptionDescription>
-            <OptionPrice>{type.price}</OptionPrice>
+            <IconWrapper>{type.icon}</IconWrapper>
+            <Title>{type.title}</Title>
+            <Description>{type.description}</Description>
+            <Price>{type.price}</Price>
           </OptionCard>
         ))}
-      </ConsultationOptions>
-      
+      </OptionsGrid>
+
       <NavButtons>
         <NavButton onClick={onBack}>
           <FaArrowLeft /> Back
