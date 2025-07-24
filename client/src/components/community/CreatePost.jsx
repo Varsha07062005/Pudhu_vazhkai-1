@@ -1,36 +1,44 @@
 import React, { useState } from 'react';
 import styled from '@emotion/styled';
 import { FaPaperPlane } from 'react-icons/fa';
+import { motion } from 'framer-motion';
 
-const PostForm = styled.form`
-  background: ${props => props.theme.colors.accent};
+const PostForm = styled(motion.form)`
+  background: linear-gradient(135deg, #ff9a9e, #fad0c4);
   border-radius: 8px;
-  padding: ${props => props.theme.spacing.md};
-  box-shadow: ${props => props.theme.shadows.small};
-  margin-bottom: ${props => props.theme.spacing.lg};
+  padding: 16px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 `;
 
 const PostInput = styled.textarea`
   width: 100%;
   min-height: 100px;
-  border: 1px solid ${props => props.theme.colors.lightBlue};
+  border: 1px solid #ff6f91;
   border-radius: 4px;
-  padding: ${props => props.theme.spacing.sm};
-  margin-bottom: ${props => props.theme.spacing.sm};
+  padding: 8px;
+  margin-bottom: 12px;
   resize: vertical;
   font-family: inherit;
 `;
 
-const SubmitButton = styled.button`
+const SubmitButton = styled(motion.button)`
   display: flex;
   align-items: center;
-  gap: ${props => props.theme.spacing.sm};
-  background: ${props => props.theme.colors.primary};
-  color: ${props => props.theme.colors.accent};
+  gap: 8px;
+  background: #ff6f91;
+  color: white;
   border: none;
-  padding: ${props => props.theme.spacing.sm} ${props => props.theme.spacing.md};
+  padding: 8px 16px;
   border-radius: 4px;
   cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  }
 `;
 
 const CreatePost = ({ onCreate }) => {
@@ -39,19 +47,28 @@ const CreatePost = ({ onCreate }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (content.trim()) {
-      onCreate(content);
+      onCreate({ content, timestamp: 'Just now' });
       setContent('');
     }
   };
 
   return (
-    <PostForm onSubmit={handleSubmit}>
+    <PostForm
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      onSubmit={handleSubmit}
+    >
       <PostInput
-        placeholder="Share your thoughts with the community..."
+        placeholder="Share your thoughts..."
         value={content}
         onChange={(e) => setContent(e.target.value)}
       />
-      <SubmitButton type="submit">
+      <SubmitButton
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        type="submit"
+      >
         <FaPaperPlane /> Post
       </SubmitButton>
     </PostForm>

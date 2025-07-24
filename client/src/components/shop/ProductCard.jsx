@@ -1,8 +1,12 @@
 import styled from '@emotion/styled';
 import { FaRupeeSign, FaShoppingCart, FaHeart } from 'react-icons/fa';
 import { MdEmojiObjects } from 'react-icons/md';
+import { motion } from 'framer-motion';
+import { useCart } from '../../context/CartContext';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-const ProductCardContainer = styled.div`
+const ProductCardContainer = styled(motion.div)`
   border: none;
   border-radius: 16px;
   overflow: hidden;
@@ -94,12 +98,27 @@ const ActionButton = styled.button`
   }
 `;
 
-const ProductCard = ({ product, toggleCart, toggleWishlist, cart, wishlist }) => {
-  const isInCart = cart.includes(product.id);
-  const isInWishlist = wishlist.includes(product.id);
+const ProductCard = ({ product }) => {
+  const { cart, wishlist, toggleCart, toggleWishlist } = useCart();
+
+  const isInCart = cart.some(item => item.id === product.id);
+  const isInWishlist = wishlist.some(item => item.id === product.id);
+
+  const handleCartClick = () => {
+    toggleCart(product);
+    toast.success(isInCart ? 'Removed from Cart' : 'Added to Cart', { autoClose: 1500 });
+  };
+
+  const handleWishlistClick = () => {
+    toggleWishlist(product);
+    toast.info(isInWishlist ? 'Removed from Wishlist' : 'Added to Wishlist', { autoClose: 1500 });
+  };
 
   return (
-    <ProductCardContainer>
+    <ProductCardContainer
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+    >
       <ProductImage src={product.img || 'https://via.placeholder.com/300'} alt={product.name} />
       <ProductInfo>
         <ProductTitle>{product.name}</ProductTitle>
@@ -112,11 +131,11 @@ const ProductCard = ({ product, toggleCart, toggleWishlist, cart, wishlist }) =>
           </EMIBadge>
         )}
         <ProductActions>
-          <ActionButton className="primary" onClick={() => toggleCart(product.id)}>
-            <FaShoppingCart /> {isInCart ? 'Remove from Cart' : 'Add to Cart'}
+          <ActionButton className="primary" onClick={handleCartClick}>
+            <FaShoppingCart /> {isInCart ? 'Remove' : 'Add to Cart'}
           </ActionButton>
-          <ActionButton className="secondary" onClick={() => toggleWishlist(product.id)}>
-            <FaHeart /> {isInWishlist ? 'Remove from Wishlist' : 'Wishlist'}
+          <ActionButton className="secondary" onClick={handleWishlistClick}>
+            <FaHeart /> {isInWishlist ? 'Remove' : 'Wishlist'}
           </ActionButton>
         </ProductActions>
       </ProductInfo>
